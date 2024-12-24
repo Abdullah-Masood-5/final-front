@@ -20,19 +20,17 @@ const SignIn = () => {
         formData
       );
 
-      // Store token and role in localStorage
       localStorage.setItem("token", res.data.token);
-      localStorage.setItem("role", res.data.role); // assuming the role is returned from the API
+      localStorage.setItem("role", res.data.role);
 
       setMessage("Login successful");
 
-      window.location.reload(); // Reload the page after successful login
-      // Redirect user based on role
+      window.location.reload();
       if (res.data.role === "Host") {
-        navigate("/hostdashboard"); // Redirect to Host Dashboard if role is Host
+        navigate("/hostdashboard");
         window.reload();
       } else {
-        navigate("/profile"); // Redirect to homepage or Guest dashboard
+        navigate("/profile");
         window.reload();
       }
     } catch (error) {
