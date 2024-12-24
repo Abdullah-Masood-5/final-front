@@ -23,17 +23,22 @@ function Navbar() {
 
   useEffect(() => {
     const token = localStorage.getItem("token");
+    const role = localStorage.getItem("role");
 
     if (token) {
       setIsLoggedIn(true);
+      setUserRole(role);
     } else {
       setIsLoggedIn(false);
+      setUserRole(null);
     }
   }, []);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
+    localStorage.removeItem("role");
     setIsLoggedIn(false);
+    setUserRole(null);
     navigate("/signin"); 
   };
   
@@ -48,13 +53,11 @@ function Navbar() {
         >
           <div className="navbar-content">
             <div className="logo-container">
-              <NavLink to="/" className="logo-text">
+              <NavLink to="/Tasks" className="logo-text">
                 Tasks
               </NavLink>
-            </div>
-
-            <div className="user-controls">
-              <span className="host-text">Airbnb Your Home</span>
+            </div> 
+            <div className="user-controls"> 
               <button className="globe-button">
                 <LuGlobe className="globe-icon" />
               </button>
@@ -76,13 +79,13 @@ function Navbar() {
           {isOpen && (
             <div onClick={toggleMenu} className="dropdown-menu-desktop">
               <div className="dropdown-content">
-                {isLoggedIn  && (
+                {isLoggedIn && (
                   <>
                     <NavLink to="/Tasks" className="dropdown-item">
                       Tasks
                     </NavLink>
                     <NavLink to="/view_tasks" className="dropdown-item">
-                      View Tasks
+                      View Your Tasks
                     </NavLink>
                   </>
                 )}

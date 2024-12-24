@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
-import "../Styles/HostDashboard.css";
+import "../Styles/Tasks.css";
 
 const Tasks = () => {
   const [listings, setListings] = useState([]);
@@ -10,22 +10,17 @@ const Tasks = () => {
     due_date: "",
   });
   const [editId, setEditId] = useState(null);
-  const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchListings = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        const res = await axios.get(
-          `${import.meta.env.VITE_API_BASE_URL}/api/tasks/docs`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
-        setListings(res.data);
-      } catch (err) {
-        setError("Failed to fetch listings. Please try again later.");
-      }
+      const token = localStorage.getItem("token");
+      const res = await axios.get(
+        `${import.meta.env.VITE_API_BASE_URL}/api/task/docs`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      setListings(res.data);
     };
 
     fetchListings();
@@ -38,15 +33,11 @@ const Tasks = () => {
         setFormData({
           title: listingToEdit.title,
           description: listingToEdit.description,
-          due_date: listingToEdit.due_date,
+          due_date: listingToEdit.due_date.split("T")[0], // Format date
         });
       }
     }
   }, [editId, listings]);
-
-  const handleFileChange = (e) => {
-    setFormData({ ...formData });
-  };
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -55,71 +46,55 @@ const Tasks = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const token = localStorage.getItem("token");
-    const form = new FormData();
+    const config = {
+      headers: { Authorization: `Bearer ${token}` },
+    };
 
-    for (let key in formData) form.append(key, formData[key]);
-
-    try {
-      if (editId) {
-        await axios.put(
-          `${import.meta.env.VITE_API_BASE_URL}/api/tasks/docs/${editId}`,
-          form,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
-      } else {
-        await axios.post(
-          `${import.meta.env.VITE_API_BASE_URL}/api/tasks/docs`,
-          form,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
-      }
-
-      setEditId(null);
-      setFormData({
-        title: "",
-        description: "",
-        due_date: "",
-      });
-
-      const res = await axios.get(
-        `${import.meta.env.VITE_API_BASE_URL}/api/tasks/docs`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
+    if (editId) {
+      await axios.put(
+        `${import.meta.env.VITE_API_BASE_URL}/api/task/docs/${editId}`,
+        formData,
+        config
       );
-      setListings(res.data);
-    } catch (err) {
-      setError("Failed to submit the form. Please try again later.");
+    } else {
+      await axios.post(
+        `${import.meta.env.VITE_API_BASE_URL}/api/task/docs`,
+        formData,
+        config
+      );
     }
+
+    setEditId(null);
+    setFormData({
+      title: "",
+      description: "",
+      due_date: "",
+    });
+
+    const res = await axios.get(
+      `${import.meta.env.VITE_API_BASE_URL}/api/task/docs`,
+      config
+    );
+    setListings(res.data);
   };
 
   const handleDelete = async (id) => {
     const token = localStorage.getItem("token");
-    try {
-      await axios.delete(
-        `${import.meta.env.VITE_API_BASE_URL}/api/tasks/docs/${id}`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-      setListings(listings.filter((listing) => listing._id !== id));
-    } catch (err) {
-      setError("Failed to delete the listing. Please try again later.");
-    }
+    await axios.delete(
+      `${import.meta.env.VITE_API_BASE_URL}/api/task/docs/${id}`,
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
+    setListings(listings.filter((listing) => listing._id !== id));
   };
 
   return (
-    <div className="host-dashboard-container">
-      <h1 className="host-dashboard-title">Your Listings</h1>
-      {error && <p className="error-message">{error}</p>}
+    <div className="tasks-container">
+      <h1 className="tasks-title">Your Tasks</h1>
       <form
         onSubmit={handleSubmit}
-        encType="multipart/form-data"
-        className="host-dashboard-form"
+        className="tasks-form"
       >
         <input
           type="text"
@@ -128,7 +103,7 @@ const Tasks = () => {
           value={formData.title}
           onChange={handleChange}
           required
-          className="host-dashboard-input"
+          className="tasks-input"
         />
         <input
           type="text"
@@ -137,16 +112,23 @@ const Tasks = () => {
           value={formData.description}
           onChange={handleChange}
           required
-          className="host-dashboard-input"
+          className="tasks-input"
         />
-        <label className="booking-page-date">Due date: </label>
-        <input type="date" name="due_date" onChange={handleChange} required />
-        <button type="submit" className="host-dashboard-button">
-          {editId ? "Update Listing" : "Add Listing"}
+        <label className="booking-page-date">Due Date:</label>
+        <input
+          type="date"
+          name="due_date"
+          value={formData.due_date}
+          onChange={handleChange}
+          required
+          className="tasks-input"
+        />
+        <button type="submit" className="tasks-button">
+          {editId ? "Update Task" : "Add Task"}
         </button>
       </form>
 
-      <table className="host-dashboard-table">
+      <table className="tasks-table">
         <thead>
           <tr>
             <th>Title</th>
@@ -158,17 +140,17 @@ const Tasks = () => {
           {listings.map((listing) => (
             <tr key={listing._id}>
               <td>{listing.title}</td>
-              <td>{listing.due_date}</td>
+              <td>{listing.due_date.split("T")[0]}</td>
               <td>
                 <button
                   onClick={() => setEditId(listing._id)}
-                  className="host-dashboard-edit-button"
+                  className="tasks-edit-button"
                 >
                   Edit
                 </button>
                 <button
                   onClick={() => handleDelete(listing._id)}
-                  className="host-dashboard-delete-button"
+                  className="tasks-delete-button"
                 >
                   Delete
                 </button>

@@ -42,10 +42,6 @@ const SignIn = () => {
 
   return (
     <div className="signin-container">
-      <div className="signin-image">
-        <img src="./SignIn.jpeg" alt="SignIn Illustration" />
-      </div>
-
       <div className="signin-form-container">
         <form onSubmit={handleSubmit} className="signin-form">
           <input

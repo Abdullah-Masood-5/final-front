@@ -3,7 +3,7 @@ import SignUp from './Components/SignUp';
 import SignIn from './Components/SignIn';
 import Navbar from './Components/Navbar';
 import Tasks from "./Components/Tasks";
-import HostBookings from "./Components/view_tasks";
+import Tasks_view from "./Components/view_tasks";
 
 function App() {
   return (
@@ -14,7 +14,7 @@ function App() {
         <Route path="/signup" element={<SignUp />} />
         <Route path="/signin" element={<SignIn />} />
         <Route path="/Tasks" element={<Tasks />} />
-                <Route path="/host/bookings" element={<HostBookings />} />
+        <Route path="/view_tasks" element={<Tasks_view />} />
       </Routes>
     </Router>
   );
