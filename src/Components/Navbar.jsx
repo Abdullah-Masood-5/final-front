@@ -23,22 +23,17 @@ function Navbar() {
 
   useEffect(() => {
     const token = localStorage.getItem("token");
-    const role = localStorage.getItem("role");
 
     if (token) {
       setIsLoggedIn(true);
-      setUserRole(role);
     } else {
       setIsLoggedIn(false);
-      setUserRole(null);
     }
   }, []);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
-    localStorage.removeItem("role");
     setIsLoggedIn(false);
-    setUserRole(null);
     navigate("/signin"); 
   };
   
@@ -81,10 +76,13 @@ function Navbar() {
           {isOpen && (
             <div onClick={toggleMenu} className="dropdown-menu-desktop">
               <div className="dropdown-content">
-                {isLoggedIn && userRole === "Host" && (
+                {isLoggedIn  && (
                   <>
                     <NavLink to="/Tasks" className="dropdown-item">
                       Tasks
+                    </NavLink>
+                    <NavLink to="/view_tasks" className="dropdown-item">
+                      View Tasks
                     </NavLink>
                   </>
                 )}

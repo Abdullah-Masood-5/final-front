@@ -8,7 +8,6 @@ const SignUp = () => {
     username: "",
     email: "",
     password: "",
-    role: "Host", // Default role
   });
   const [message, setMessage] = useState("");
 
@@ -31,9 +30,6 @@ const SignUp = () => {
 
   return (
     <div className="signup-container">
-      <div className="signup-image">
-        <img src="./SignUp.jpeg" alt="SignUp Illustration" />
-      </div>
 
       <div className="signup-form-container">
         <form onSubmit={handleSubmit} className="signup-form">
@@ -61,6 +57,7 @@ const SignUp = () => {
             className="signup-input"
             required
           />
+        
           <button type="submit" className="signup-button">
             Sign Up
           </button>

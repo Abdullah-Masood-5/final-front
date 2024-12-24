@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import "../Styles/HostDashboard.css";
+
 const Tasks = () => {
   const [listings, setListings] = useState([]);
   const [formData, setFormData] = useState({
@@ -9,23 +10,27 @@ const Tasks = () => {
     due_date: "",
   });
   const [editId, setEditId] = useState(null);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchListings = async () => {
-      const token = localStorage.getItem("token");
-      const res = await axios.get(
-        `${import.meta.env.VITE_API_BASE_URL}/api/tasks/listings`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-      setListings(res.data);
+      try {
+        const token = localStorage.getItem("token");
+        const res = await axios.get(
+          `${import.meta.env.VITE_API_BASE_URL}/api/tasks/docs`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+        setListings(res.data);
+      } catch (err) {
+        setError("Failed to fetch listings. Please try again later.");
+      }
     };
 
     fetchListings();
   }, []);
 
-  // Set form data for editing a listing
   useEffect(() => {
     if (editId) {
       const listingToEdit = listings.find((listing) => listing._id === editId);
@@ -54,55 +59,63 @@ const Tasks = () => {
 
     for (let key in formData) form.append(key, formData[key]);
 
-    if (editId) {
-      await axios.put(
-        `${import.meta.env.VITE_API_BASE_URL}/api/admin/listings/${editId}`,
-        form,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-    } else {
-      // Add a new listing
-      await axios.post(
-        `${import.meta.env.VITE_API_BASE_URL}/api/admin/listings`,
-        form,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-    }
-
-    setEditId(null);
-    setFormData({
-      title: "",
-      description: "",
-      due_date: "",
-    });
-    // Re-fetch listings after submit to get updated data
-    const res = await axios.get(
-      `${import.meta.env.VITE_API_BASE_URL}/api/admin/listings`,
-      {
-        headers: { Authorization: `Bearer ${token}` },
+    try {
+      if (editId) {
+        await axios.put(
+          `${import.meta.env.VITE_API_BASE_URL}/api/tasks/docs/${editId}`,
+          form,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+      } else {
+        await axios.post(
+          `${import.meta.env.VITE_API_BASE_URL}/api/tasks/docs`,
+          form,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
       }
-    );
-    setListings(res.data);
+
+      setEditId(null);
+      setFormData({
+        title: "",
+        description: "",
+        due_date: "",
+      });
+
+      const res = await axios.get(
+        `${import.meta.env.VITE_API_BASE_URL}/api/tasks/docs`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      setListings(res.data);
+    } catch (err) {
+      setError("Failed to submit the form. Please try again later.");
+    }
   };
 
   const handleDelete = async (id) => {
     const token = localStorage.getItem("token");
-    await axios.delete(
-      `${import.meta.env.VITE_API_BASE_URL}/api/admin/listings/${id}`,
-      {
-        headers: { Authorization: `Bearer ${token}` },
-      }
-    );
-    setListings(listings.filter((listing) => listing._id !== id));
+    try {
+      await axios.delete(
+        `${import.meta.env.VITE_API_BASE_URL}/api/tasks/docs/${id}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      setListings(listings.filter((listing) => listing._id !== id));
+    } catch (err) {
+      setError("Failed to delete the listing. Please try again later.");
+    }
   };
 
   return (
     <div className="host-dashboard-container">
       <h1 className="host-dashboard-title">Your Listings</h1>
+      {error && <p className="error-message">{error}</p>}
       <form
         onSubmit={handleSubmit}
         encType="multipart/form-data"
